@@ -1,8 +1,19 @@
-#include "Vector2.cpp"
-#include "Cell.cpp"
+#include "GUI.h"
+#include "Cell.h"
+#include <thread>
 Cell* StartCell;
 Cell* EndCell;
+
+
 int main()
 {
-    std::cout << std::hypot(-3, 4);
+    srand(time(0));
+    std::thread Window(GUI::Start);
+    std::cin.get();
+
+    Cell::DiscoverAll();
+
+    Window.join();
+
+
 }
