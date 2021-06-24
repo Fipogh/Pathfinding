@@ -1,8 +1,7 @@
 #include "GUI.h"
-std::vector<std::vector<Cell*>> GUI::Cells = Cell::GenerateCells();
 void GUI::Start()
 {
-    GUI::Cells = Cell::GenerateCells();
+    Cell::Cells = Cell::GenerateCells();
     sf::RenderWindow window(sf::VideoMode(width, height), "Pathfinding");
     while (window.isOpen())
     {
@@ -15,10 +14,10 @@ void GUI::Start()
 void GUI::Draw(sf::RenderWindow& window)
 {
     window.clear();
-    for (auto i: GUI::Cells) for (Cell* j: i)
+    for (auto i: Cell::Cells) for (Cell* j: i)
     {
         sf::RectangleShape rct(sf::Vector2f(CellSize,CellSize));
-        rct.setPosition(j->GetPos());
+        rct.setPosition(j->GetPos().x*CellSize,j->GetPos().y*CellSize);
         rct.setOutlineColor(sf::Color::Black);
         switch (j->type)
         {
@@ -28,8 +27,14 @@ void GUI::Draw(sf::RenderWindow& window)
             case CellType::End:
                 rct.setFillColor(sf::Color::Red);
                 break;
+            case CellType::End_Discovered:
+                rct.setFillColor(sf::Color::Red);
+                break;
             case CellType::Discovered:
                 rct.setFillColor(sf::Color(255, 255, 0, (j->f_value/Cell::max_f)*255));
+                break;
+            case CellType::Exposed:
+                rct.setFillColor(sf::Color::Cyan);
                 break;
             default:
                 rct.setFillColor(sf::Color::White);

@@ -10,7 +10,6 @@ public:
     static const int CellSize = scale*5;  // 1 for 5, 2 for 10, 3 for 15, and so on;
     static const int width = 1920/WindowScale/CellSize*CellSize;
     static const int height = (width/16*9)/CellSize*CellSize;
-    static std::vector<std::vector<Cell*>> Cells;
     static void Draw(sf::RenderWindow& window);
     static void Start();
 };
