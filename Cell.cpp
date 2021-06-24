@@ -30,7 +30,7 @@ void Cell::ExposeNearby(std::vector<Cell*>& exposed)
     {
         if (Cells[this->pos.x-1][this->pos.y]->type==CellType::Unknown)
         {
-            Cells[this->pos.x - 1][this->pos.y]->Expose();
+            Cells[this->pos.x - 1][this->pos.y]->Expose(this);
             exposed.push_back(Cells[this->pos.x - 1][this->pos.y]);
         }
     }
@@ -38,7 +38,7 @@ void Cell::ExposeNearby(std::vector<Cell*>& exposed)
     {
         if (Cells[this->pos.x+1][this->pos.y]->type==CellType::Unknown)
         {
-            Cells[this->pos.x + 1][this->pos.y]->Expose();
+            Cells[this->pos.x + 1][this->pos.y]->Expose(this);
             exposed.push_back(Cells[this->pos.x + 1][this->pos.y]);
         }
     }
@@ -46,7 +46,7 @@ void Cell::ExposeNearby(std::vector<Cell*>& exposed)
     {
         if (Cells[this->pos.x][this->pos.y-1]->type==CellType::Unknown)
         {
-            Cells[this->pos.x][this->pos.y - 1]->Expose();
+            Cells[this->pos.x][this->pos.y - 1]->Expose(this);
             exposed.push_back(Cells[this->pos.x][this->pos.y - 1]);
         }
     }
@@ -54,7 +54,7 @@ void Cell::ExposeNearby(std::vector<Cell*>& exposed)
     {
         if (Cells[this->pos.x][this->pos.y + 1]->type == CellType::Unknown)
         {
-            Cells[this->pos.x][this->pos.y + 1]->Expose();
+            Cells[this->pos.x][this->pos.y + 1]->Expose(this);
             exposed.push_back(Cells[this->pos.x][this->pos.y + 1]);
         }
     }
@@ -64,16 +64,26 @@ void Cell::ExposeNearby(std::vector<Cell*>& exposed)
     ((this->pos.x==Cell::EndCell->pos.x)&(this->pos.y-1==Cell::EndCell->pos.y)))
     {
         Cell::EndCell->type = CellType::End_Discovered;
+        Cell::EndCell->PreviousCell = this;
     }
 }
 
-void LogVec(std::vector<Cell*>& arr)
+void Cell::GenerateWalls()
 {
-    for (auto i = arr.begin(); i != arr.end(); i++)
+    srand(time(0));
+    for (int i = 0; i < Cell::Size_X; i++)
     {
-        std::cout << (*i)->GetPos().x << ", " << (*i)->GetPos().y << std::endl;
+        for (int j = 0; j < Cell::Size_Y; j++)
+        {
+            if (Cell::Cells[i][j]->type==Unknown)
+            {
+                if (rand()%33==0) Cell::Cells[i][j]->type = CellType::Wall;
+            }
+        }
     }
 }
+
+
 struct MinCellAndInd
 {
     Cell* MinCell;
@@ -117,19 +127,39 @@ void Cell::DeployAlgorithm()
         buffer.MinCell->ExposeNearby(exposed);
         exposed.erase(exposed.begin()+buffer.MinInd);
     }
+    TraceBack();
 }
-void Cell::Expose()
+void Cell::Expose(Cell* previous)
 {
     CalcValues();
     type = CellType::Exposed;
+    PreviousCell = previous;
 }
+
+void Cell::TraceBack()
+{
+    Cell* a = EndCell->PreviousCell;
+    while (a!=StartCell)
+    {
+        a->type = CellType::Path;
+        a = a->PreviousCell;
+    }
+}
+
 void Cell::Discover()
 {
     if (type!=CellType::Exposed) CalcValues();
     type = CellType::Discovered;
 }
 
-void Cell::SelectStartEndCells(std::vector<std::vector<Cell *>> &cells)
+void Cell::SelectStartEndCellsFixed(std::vector<std::vector<Cell *>> &cells)
+{
+    cells[0][0]->type = CellType::Start;
+    Cell::StartCell = cells[0][0];
+    cells[Cell::Size_X-1][Cell::Size_Y-1]->type = CellType::End;
+    Cell::EndCell = cells[Cell::Size_X-1][Cell::Size_Y-1];
+}
+void Cell::SelectStartEndCellsRandom(std::vector<std::vector<Cell *>> &cells)
 {
     int rpx = rand() % Cell::Size_X;
     int rpy = rand() % Cell::Size_X;
@@ -161,7 +191,7 @@ std::vector<std::vector<Cell*>> Cell::GenerateCells()
             arr[i][j] = new Cell(i, j);
         }
     }
-    SelectStartEndCells(arr);
+    SelectStartEndCellsFixed(arr);
     return arr;
 }
 

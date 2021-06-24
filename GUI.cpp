@@ -10,7 +10,6 @@ void GUI::Start()
     }
 }
 
-
 void GUI::Draw(sf::RenderWindow& window)
 {
     window.clear();
@@ -31,10 +30,16 @@ void GUI::Draw(sf::RenderWindow& window)
                 rct.setFillColor(sf::Color::Red);
                 break;
             case CellType::Discovered:
-                rct.setFillColor(sf::Color(255, 255, 0, (j->f_value/Cell::max_f)*255));
+                rct.setFillColor(sf::Color(255,165,0));
                 break;
             case CellType::Exposed:
-                rct.setFillColor(sf::Color::Cyan);
+                rct.setFillColor(sf::Color::Yellow);
+                break;
+            case CellType::Path:
+                rct.setFillColor(sf::Color::Magenta);
+                break;
+            case CellType::Wall:
+                rct.setFillColor(sf::Color::Black);
                 break;
             default:
                 rct.setFillColor(sf::Color::White);
@@ -54,5 +59,9 @@ void GUI::ProcessEvents(sf::RenderWindow& window)
     {
         if (event.type == sf::Event::Closed)
             window.close();
+        if (event.type == sf::Event::KeyPressed)
+            if (event.key.code ==sf::Keyboard::Space)
+            Cell::GenerateWalls();
+
     }
 }
